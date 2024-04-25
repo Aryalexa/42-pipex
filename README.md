@@ -1,7 +1,7 @@
 # 42-pipex
 > Redirections and pipes.
 
-Pipex is a program that replicates the behavior of doing `> infile cmd1 | cmd2 > outfile` in bash, or even `> infile cmd1 | ... | cmdn > outfile`.
+Pipex is a program that replicates the behavior of doing `< infile cmd1 | cmd2 > outfile` in bash, or even `< infile cmd1 | ... | cmdn > outfile`.
 
 The program will receive al least 4 arguments where the first one will be the input file from it will read, and the last one will be the output file that will contain the final outputs.
 
