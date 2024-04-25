@@ -38,7 +38,8 @@ char	*find_path(char *cmd, char *env[])
 	ft_free_arrstr(paths);
 	return (NULL);
 }
-void print2_cur_cmd(char *cmd)
+
+void	printerr_cur_cmd(char *cmd)
 {
 	write(2, "while executing ", 16);
 	write(2, cmd, ft_strlen(cmd));
@@ -59,7 +60,7 @@ void	my_exec(char *cmd, char *env[])
 	if (!cmd_path)
 	{
 		ft_free_arrstr(cmd_args);
-		print2_cur_cmd(cmd);
+		printerr_cur_cmd(cmd);
 		my_exit("command path not found");
 	}
 	cmd_args[0] = cmd_path;
@@ -102,7 +103,7 @@ void	my_pipex(char *cmd, char *env[])
 			my_exit("wait error");
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
 		{
-			print2_cur_cmd(cmd);
+			printerr_cur_cmd(cmd);
 			my_exit("child did not success");
 		}
 	}
@@ -126,8 +127,8 @@ void	init_pipex(char *infile, char *outfile, char *cmds[], char *envp[])
 	if (fdout < 0)
 		my_exit("output file error at open");
 	dup2(fdout, STDOUT_FILENO);
-	my_exec(cmds[i], envp);
 	close(fdout);
+	my_exec(cmds[i], envp);
 }
 
 int	main(int argc, char *argv[], char *envp[])
