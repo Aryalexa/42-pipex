@@ -76,7 +76,7 @@ void	my_exec(char *cmd, char *env[])
  * child: > pipe, exec
  * parent: < pipe, wait
 */
-void	my_pipex(char *cmd, char *env[])
+void	my_piped_exec(char *cmd, char *env[])
 {
 	int	pipefd[2];
 	int	pid;
@@ -109,7 +109,7 @@ void	my_pipex(char *cmd, char *env[])
 	}
 }
 
-void	init_pipex(char *infile, char *outfile, char *cmds[], char *envp[])
+void	my_pipex(char *infile, char *outfile, char *cmds[], char *envp[])
 {
 	int		fdin;
 	int		fdout;
@@ -122,7 +122,7 @@ void	init_pipex(char *infile, char *outfile, char *cmds[], char *envp[])
 	close(fdin);
 	i = 0;
 	while (cmds[i] && cmds[i + 1])
-		my_pipex(cmds[i++], envp);
+		my_piped_exec(cmds[i++], envp);
 	fdout = open(outfile, O_RDWR | O_CREAT, 0777);
 	if (fdout < 0)
 		my_exit("output file error at open");
@@ -139,7 +139,7 @@ int	main(int argc, char *argv[], char *envp[])
 	{
 		outfile = argv[argc - 1];
 		argv[argc - 1] = NULL;
-		init_pipex(argv[1], outfile, &argv[2], envp);
+		my_pipex(argv[1], outfile, &argv[2], envp);
 	}
 	else
 		ft_printf("Usage: ./pipex infile cmd1 cmd2 [.. cmdn] outfile");
