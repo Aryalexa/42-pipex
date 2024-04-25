@@ -38,6 +38,12 @@ char	*find_path(char *cmd, char *env[])
 	ft_free_arrstr(paths);
 	return (NULL);
 }
+void print2_cur_cmd(char *cmd)
+{
+	write(2, "while executing ", 16);
+	write(2, cmd, ft_strlen(cmd));
+	write(2, "...\n", 4);
+}
 
 void	my_exec(char *cmd, char *env[])
 {
@@ -53,6 +59,7 @@ void	my_exec(char *cmd, char *env[])
 	if (!cmd_path)
 	{
 		ft_free_arrstr(cmd_args);
+		print2_cur_cmd(cmd);
 		my_exit("command path not found");
 	}
 	cmd_args[0] = cmd_path;
@@ -74,9 +81,6 @@ void	my_pipex(char *cmd, char *env[])
 	int	pid;
 	int	status;
 
-	write(2, "executing..", 11);
-	write(2, cmd, ft_strlen(cmd));
-	write(2, "\n", 1);
 	if (pipe(pipefd) == -1)
 		my_exit("pipe could not be created");
 	pid = fork();
@@ -97,33 +101,30 @@ void	my_pipex(char *cmd, char *env[])
 		if (wait(&status) == -1)
 			my_exit("wait error");
 		if (!WIFEXITED(status) || WEXITSTATUS(status) != 0)
-			my_exit("child went wrong");
+		{
+			print2_cur_cmd(cmd);
+			my_exit("child did not success");
+		}
 	}
 }
 
-void	init_pipex(int argc, char *argv[], char *envp[])
+void	init_pipex(char *infile, char *outfile, char *cmds[], char *envp[])
 {
 	int		fdin;
 	int		fdout;
-	char	**cmds;
 	int		i;
 
-	// ft_printf("input file: %s\n", argv[1]);
-	// ft_printf("output file: %s\n", argv[argc - 1]);
-	fdin = open(argv[1], O_RDONLY);
+	fdin = open(infile, O_RDONLY);
 	if (fdin < 0)
 		my_exit("input file error at open");
-	fdout = open(argv[argc - 1], O_RDWR | O_CREAT, 0777);
-	if (fdout < 0)
-		my_exit("output file error at open");
-	cmds = &argv[2];
-	argv[argc - 1] = NULL;
-	// ft_putarr_str(cmds);
 	dup2(fdin, STDIN_FILENO);
 	close(fdin);
 	i = 0;
 	while (cmds[i] && cmds[i + 1])
 		my_pipex(cmds[i++], envp);
+	fdout = open(outfile, O_RDWR | O_CREAT, 0777);
+	if (fdout < 0)
+		my_exit("output file error at open");
 	dup2(fdout, STDOUT_FILENO);
 	my_exec(cmds[i], envp);
 	close(fdout);
@@ -131,9 +132,13 @@ void	init_pipex(int argc, char *argv[], char *envp[])
 
 int	main(int argc, char *argv[], char *envp[])
 {
+	char	*outfile;
+
 	if (argc >= 5)
 	{
-		init_pipex(argc, argv, envp);
+		outfile = argv[argc - 1];
+		argv[argc - 1] = NULL;
+		init_pipex(argv[1], outfile, &argv[2], envp);
 	}
 	else
 		ft_printf("Usage: ./pipex infile cmd1 cmd2 [.. cmdn] outfile");
