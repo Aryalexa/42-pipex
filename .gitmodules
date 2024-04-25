@@ -1,0 +1,3 @@
+[submodule "libftmod"]
+	path = libftmod
+	url = git@github.com:Aryalexa/42-libft.git
